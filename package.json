@@ -1,6 +1,6 @@
 {
   "name": "modular-gql",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Help build GraphQL application with schema exploded by modules",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
