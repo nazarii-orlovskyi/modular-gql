@@ -22,6 +22,7 @@ Help build GraphQL application with schema exploded by modules
 - component for read schema from some dir
 - helpers for frameworks
 - test coverage 90+
+- cli helper: creating modules, init app, generating type definition files for ts and flow
 
 # Release notes
 0.1.0 - initial version on npm
