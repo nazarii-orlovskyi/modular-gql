@@ -30,7 +30,9 @@ async function getDefaultModulesConfig(modulesDir: string): Promise<ModuleConfig
     return modules;
 }
 
-export async function initExpressApp(options: InitExpressAppOptionsInterface): Promise<void> {
+export async function initExpressApp(
+    options: InitExpressAppOptionsInterface,
+): Promise<Application> {
     const allOptions = Object.assign(
         {
             endpoint: '/graphql/v:version',
@@ -63,4 +65,6 @@ export async function initExpressApp(options: InitExpressAppOptionsInterface): P
         }
         console.log(`Version ${version} initialized`);
     }
+
+    return options.app;
 }

@@ -15,7 +15,8 @@
             "static-method-regex": "^_?[a-z][\\w\\d]+$",
             "function-regex": "^[a-z][\\w\\d]+$"
         }],
-        "no-increment-decrement": false
+        "no-increment-decrement": false,
+        "no-else-after-return": false
     },
     "rulesDirectory": []
 }

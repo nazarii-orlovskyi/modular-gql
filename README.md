@@ -23,6 +23,8 @@ Help build GraphQL application with schema exploded by modules
 - helpers for frameworks
 - test coverage 90+
 - cli helper: creating modules, init app, generating type definition files for ts and flow
+- graphql subscriptions init & testing
 
 # Release notes
 0.1.0 - initial version on npm
+0.1.2 - add test helper
