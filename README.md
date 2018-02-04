@@ -26,5 +26,5 @@ Help build GraphQL application with schema exploded by modules
 - graphql subscriptions init & testing
 
 # Release notes
-0.1.0 - initial version on npm
-0.1.2 - add test helper
+- 0.1.0 - initial version on npm
+- 0.1.2 - add test helper
