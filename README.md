@@ -2,7 +2,7 @@
 Help build GraphQL application with schema exploded by modules
 
 
-# Modules structure (somw of this not released)
+# Modules structure (some of this not released)
 - Each directory in modules base path is module
 - Each module can contain module.json on module.js file which bootstrap module
 - Module contain "graphql" directory. This direcotry contain schema definitions
