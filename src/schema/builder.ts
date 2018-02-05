@@ -6,56 +6,54 @@ import { mergeStrings } from 'gql-merge';
 import { merge } from 'lodash';
 import ModuleInterface from '../module/interface';
 import BaseModule from '../module/base';
-
-export interface GraphQLSchemaByVersionInterface {
-    [key: string]: GraphQLSchema;
-}
+import ModuleConfigInterface from '../config/module-interface';
+import * as fs from 'fs-extra';
 
 export default class SchemaBuilder {
     protected _options : ConfigInterface;
 
     constructor(options: ConfigInterface) {
-        if (!options.modules.length) {
-            throw new Error('Modules are not specified');
+        if (options.modules && !options.modules.length) {
+            throw new Error('Modules list are empty');
         }
         this._options = options;
     }
 
-    async createSchema(): Promise<GraphQLSchemaByVersionInterface> {
-        const schemaByVersion: GraphQLSchemaByVersionInterface = {};
+    protected async _getDefaultModulesConfig(modulesDir: string): Promise<ModuleConfigInterface[]> {
+        const modules: ModuleConfigInterface[] = [];
+        for (const name of await fs.readdir(modulesDir)) {
+            modules.push({ name });
+        }
+    
+        return modules;
+    }
+
+    async createSchema(): Promise<GraphQLSchema> {
         const modules = await this._loadModules();
 
-        const typeDefsArray: { [key: string]: string[] } = {};
-        const resolversArray: { [key: string]: object[] } = {};
+        const typeDefsArray: string[] = [];
+        const resolversArray: object[] = [];
 
         for (const module of modules) {
-            const schemaByVersion = await module.loadSchemaByVersion();
+            const moduleSchema = await module.loadSchema();
            
-            for (const version in schemaByVersion) {
-                if (!typeDefsArray[version]) {
-                    typeDefsArray[version] = [];
-                    resolversArray[version] = [];
-                }
-
-                typeDefsArray[version].push(schemaByVersion[version].typeDefs);
-                resolversArray[version].push(schemaByVersion[version].resolvers);
-            }
+            typeDefsArray.push(moduleSchema.typeDefs);
+            resolversArray.push(moduleSchema.resolvers);
         }
         
-        for (const version in typeDefsArray) {
-            schemaByVersion[version] = makeExecutableSchema({
-                typeDefs: mergeStrings(typeDefsArray[version]),
-                resolvers: merge({}, ...resolversArray[version]),
-            });
-        }
-
-        return schemaByVersion;
+        return makeExecutableSchema({
+            typeDefs: mergeStrings(typeDefsArray),
+            resolvers: merge({}, ...resolversArray),
+        });
     }
 
     protected async _loadModules(): Promise<ModuleInterface[]> {
         const modules: ModuleInterface[] = [];
+        const modulesConfig: ModuleConfigInterface[] = this._options.modules
+            ? this._options.modules
+            : await this._getDefaultModulesConfig(this._options.modulesBasePath);
 
-        for (const moduleConfig of this._options.modules) {
+        for (const moduleConfig of modulesConfig) {
             const rootPath = path.resolve(this._options.modulesBasePath, moduleConfig.name);
             const bootstrap = path.resolve(rootPath, 'bootstrap');
 
