@@ -9,8 +9,13 @@ export class TestHelper {
     protected _expressApp?: Application;
     protected _options?: InitExpressOptionsInterface;
     protected _beforeEachHandlers: Function[] | null = null;
+    protected _destroy?: () => Promise<void>;
 
-    initExpress(options: InitExpressResultInterface) {
+    async initExpress(options: InitExpressResultInterface) {
+        await options.init();
+
+        this._destroy = options.destroy;
+
         this._expressApp = options.expressApp;
         this._options = options.options;
         this._beforeEachHandlers = null;
@@ -86,5 +91,9 @@ export class TestHelper {
     protected async _match(query: string, variables: object, expected: object): Promise<void> {
         const response = await this.request(query, variables);
         expect(response.data).to.deep.eq(expected);
+    }
+
+    async destroy() {
+        await this._destroy!();
     }
 }

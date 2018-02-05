@@ -25,6 +25,8 @@ export interface InitExpressResultInterface {
     server: http.Server;
     schema: GraphQLSchema;
     listen: (port: number | string, cb?: Function) => void;
+    init(): Promise<void>;
+    destroy(): Promise<void>;
 }
 
 export async function initExpress(
@@ -49,14 +51,18 @@ export async function initExpress(
         modulesBasePath: _options.modulesPath,
     });
 
-    const schema = await schemaBuilder.createSchema();
+    const modulesSchema = await schemaBuilder.createSchema();
 
-    _options.app.use(_options.endpoint!, bodyParser.json(), graphqlExpress({ schema }));
+    _options.app.use(
+        _options.endpoint!,
+        bodyParser.json(),
+        graphqlExpress({ schema: modulesSchema.schema }),
+    );
 
     const server = http.createServer(_options.app);
 
     SubscriptionServer.create(
-        { schema, execute, subscribe },
+        { execute, subscribe, schema: modulesSchema.schema },
         {
             server,
             path: _options.subscriptionsEndpoint,
@@ -72,10 +78,21 @@ export async function initExpress(
 
     return {
         server,
-        schema,
+        schema: modulesSchema.schema,
         options: _options,
         expressApp: _options.app,
+        async init() {
+            for (let i = 0; i < modulesSchema.modules.length; i++) {
+                await modulesSchema.modules[i].init();
+            }
+        },
+        async destroy() {
+            for (let i = 0; i < modulesSchema.modules.length; i++) {
+                await modulesSchema.modules[i].destroy();
+            }
+        },
         listen(port, cb) {
+            console.log('server listening');
             server.listen(port, cb);
         },
     };

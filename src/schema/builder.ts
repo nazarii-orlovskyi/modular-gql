@@ -30,7 +30,7 @@ export default class SchemaBuilder {
         return modules;
     }
 
-    async createSchema(): Promise<GraphQLSchema> {
+    async createSchema(): Promise<{ schema: GraphQLSchema, modules: ModuleInterface[] }> {
         const modules = await this._loadModules();
 
         const typeDefsArray: string[] = [];
@@ -43,10 +43,13 @@ export default class SchemaBuilder {
             resolversArray.push(moduleSchema.resolvers);
         }
         
-        return makeExecutableSchema({
-            typeDefs: mergeStrings(typeDefsArray),
-            resolvers: merge({}, ...resolversArray),
-        });
+        return {
+            modules,
+            schema: makeExecutableSchema({
+                typeDefs: mergeStrings(typeDefsArray),
+                resolvers: merge({}, ...resolversArray),
+            }),
+        };
     }
 
     protected async _loadModules(): Promise<ModuleInterface[]> {
@@ -57,10 +60,15 @@ export default class SchemaBuilder {
 
         for (const moduleConfig of modulesConfig) {
             const rootPath = path.resolve(this._options.modulesBasePath, moduleConfig.name);
-            const bootstrap = path.resolve(rootPath, 'bootstrap');
+            const moduleMainPath = path.resolve(rootPath, 'module');
 
             try {
-                modules.push(require(bootstrap));
+                const module = require(moduleMainPath);
+                if (typeof module.module !== 'function') {
+                    throw new Error(`Module not found in file "${moduleMainPath}"`);
+                }
+
+                modules.push(new module.module({ rootPath }));
             } catch (err) {
                 if (err.code === 'MODULE_NOT_FOUND') {
                     modules.push(new BaseModule({ rootPath }));

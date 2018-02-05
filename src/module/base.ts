@@ -109,4 +109,7 @@ export default class ModuleBase implements ModuleInterface {
             resolvers: merge({}, ...resolversArray),
         };
     }
+
+    init() {}
+    destroy() {}
 }
