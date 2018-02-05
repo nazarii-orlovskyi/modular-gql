@@ -19,7 +19,9 @@ export default class SchemaBuilder {
         this._options = options;
     }
 
-    protected async _getDefaultModulesConfig(modulesDir: string): Promise<ModuleConfigInterface[]> {
+    public static async getDefaultModulesConfig(
+        modulesDir: string,
+    ): Promise<ModuleConfigInterface[]> {
         const modules: ModuleConfigInterface[] = [];
         for (const name of await fs.readdir(modulesDir)) {
             modules.push({ name });
@@ -51,7 +53,7 @@ export default class SchemaBuilder {
         const modules: ModuleInterface[] = [];
         const modulesConfig: ModuleConfigInterface[] = this._options.modules
             ? this._options.modules
-            : await this._getDefaultModulesConfig(this._options.modulesBasePath);
+            : await SchemaBuilder.getDefaultModulesConfig(this._options.modulesBasePath);
 
         for (const moduleConfig of modulesConfig) {
             const rootPath = path.resolve(this._options.modulesBasePath, moduleConfig.name);

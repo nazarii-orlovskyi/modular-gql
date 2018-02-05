@@ -20,6 +20,7 @@ export interface InitExpressOptionsInterface {
 }
 
 export interface InitExpressResultInterface {
+    options: InitExpressOptionsInterface;
     expressApp: express.Application;
     server: http.Server;
     schema: GraphQLSchema;
@@ -72,6 +73,7 @@ export async function initExpress(
     return {
         server,
         schema,
+        options: _options,
         expressApp: _options.app,
         listen(port, cb) {
             server.listen(port, cb);
