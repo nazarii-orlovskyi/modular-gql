@@ -116,7 +116,9 @@ export default class ModuleBase implements ModuleInterface {
         };
     }
 
-    static applyProcessAllCallbackRecurcively(resolvers: any, callback: ProcessAllCallback): void {
+    static applyProcessAllCallbackRecurcively(
+        resolvers: any, callback: ProcessAllCallback, path: string = ''
+    ): void {
         for (const key in resolvers) {
             if (typeof resolvers[key] === 'function') {
                 if (key === 'subscribe') {
@@ -125,10 +127,15 @@ export default class ModuleBase implements ModuleInterface {
                 }
                 const currentResolver = resolvers[key];
                 resolvers[key] = function (parent: any, args: any, context: any, info: any) {
-                    return callback(currentResolver, { parent, args, context, info });
+                    return callback(
+                        currentResolver,
+                        { parent, args, context, info, path: path + '.' + key }
+                    );
                 };
             } else if (typeof resolvers[key] === 'object') {
-                ModuleBase.applyProcessAllCallbackRecurcively(resolvers[key], callback);
+                ModuleBase.applyProcessAllCallbackRecurcively(
+                    resolvers[key], callback, path + '.' + key
+                );
             }
         }
     }

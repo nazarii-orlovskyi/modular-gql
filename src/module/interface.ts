@@ -5,6 +5,7 @@ export interface BeforeAllResolverParams {
     args: any;
     context: any;
     info: any;
+    path: string;
 }
 
 export interface ProcessAllCallback {
