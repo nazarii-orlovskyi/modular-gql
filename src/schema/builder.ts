@@ -8,6 +8,7 @@ import ModuleInterface from '../module/interface';
 import BaseModule from '../module/base';
 import ModuleConfigInterface from '../config/module-interface';
 import * as fs from 'fs-extra';
+import ModuleBase from '../module/base';
 
 export default class SchemaBuilder {
     protected _options : ConfigInterface;
@@ -42,12 +43,19 @@ export default class SchemaBuilder {
             typeDefsArray.push(moduleSchema.typeDefs);
             resolversArray.push(moduleSchema.resolvers);
         }
+
+        const resolvers = merge({}, ...resolversArray);
+        if (this._options.processAllCallback) {
+            ModuleBase.applyProcessAllCallbackRecurcively(
+                resolvers, this._options.processAllCallback
+            );
+        }
         
         return {
             modules,
             schema: makeExecutableSchema({
                 typeDefs: mergeStrings(typeDefsArray),
-                resolvers: merge({}, ...resolversArray),
+                resolvers,
             }),
         };
     }

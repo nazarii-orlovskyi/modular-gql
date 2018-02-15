@@ -1,4 +1,4 @@
-import ModuleInterface from './interface';
+import ModuleInterface, { ProcessAllCallback } from './interface';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import ModuleSchemaInterface from './schema-interface';
@@ -104,10 +104,37 @@ export default class ModuleBase implements ModuleInterface {
             typeDefsArray.push(schemaFromFile.typeDefs);
         }
 
+        const resolvers = merge({}, ...resolversArray);
+        const processAllCallback = this.getProcessAllCallback();
+        if (processAllCallback) {
+            ModuleBase.applyProcessAllCallbackRecurcively(resolvers, processAllCallback);
+        }
+
         return {
+            resolvers,
             typeDefs: mergeStrings(typeDefsArray),
-            resolvers: merge({}, ...resolversArray),
         };
+    }
+
+    static applyProcessAllCallbackRecurcively(resolvers: any, callback: ProcessAllCallback): void {
+        for (const key in resolvers) {
+            if (typeof resolvers[key] === 'function') {
+                if (key === 'subscribe') {
+                    // do not wrap subscriptions
+                    continue;
+                }
+                const currentResolver = resolvers[key];
+                resolvers[key] = function (parent: any, args: any, context: any, info: any) {
+                    return callback(currentResolver, { parent, args, context, info });
+                };
+            } else if (typeof resolvers[key] === 'object') {
+                ModuleBase.applyProcessAllCallbackRecurcively(resolvers[key], callback);
+            }
+        }
+    }
+
+    getProcessAllCallback() {
+        return null;
     }
 
     init() {}
