@@ -52,6 +52,7 @@ export class TestHelper {
                 if (typeof module.before !== 'function') {
                     throw new Error(`Before handler not found in file "${modulePath}"`);
                 }
+                handlers.push(module.before);
             } catch (err) {
                 if (err.code !== 'MODULE_NOT_FOUND') {
                     throw err;
@@ -90,6 +91,10 @@ export class TestHelper {
 
     protected async _match(query: string, variables: object, expected: object): Promise<void> {
         const response = await this.request(query, variables);
+
+        const errors = response.errors ? response.errors : [];
+        expect(errors).to.deep.eq([]);
+
         expect(response.data).to.deep.eq(expected);
     }
 
